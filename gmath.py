@@ -23,15 +23,19 @@ SPECULAR_EXP = 4
 #lighting functions
 def get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect ):
     # intensity is A+D+S
-    return calculate_ambient(light,areflect)+calculate_specular(light,sreflect,view,normal)+calculate_diffuse(light,dreflect,normal)
+    return calculate_ambient(light,areflect)+ calculate_specular(light,sreflect,view,normal)+calculate_diffuse(light,dreflect,normal)
 
 
 def calculate_ambient(alight, areflect):
-    #color
-    return dot_product(AMBIENT,COLOR)
-
+    ambient= [alight[0]*areflect[0],alight[1]*areflect[1],alight[2]*areflect[2]]
+    return ambient
 def calculate_diffuse(light, dreflect, normal):
-    return
+    diffuse= [light[0][0]*dreflect[0]*normalize(normal)[0]*normalize(light[1])[0],
+    light[0][1]*dreflect[1]*normalize(normal)[1]*normalize(light[1])[1],
+    light[0][2]*dreflect[2]*normalize(normal)[1]*normalize(light[1])[2],
+    ]
+    return diffuse
+    #dot_product(DIFFUSE,)*(normalize(normal)*normalize(light))
 
 def calculate_specular(light, sreflect, view, normal):
     pass
