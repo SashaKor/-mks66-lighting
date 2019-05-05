@@ -22,27 +22,53 @@ SPECULAR_EXP = 4
 
 #lighting functions
 def get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect ):
-    # intensity is A+D+S
-    return calculate_ambient(light,areflect)+ calculate_specular(light,sreflect,view,normal)+calculate_diffuse(light,dreflect,normal)
-
+    ambient = calculate_ambient(ambient, areflect)
+    diffuse = calculate_diffuse(light, dreflect, normal)
+    specular = calculate_specular(light, sreflect, view, normal)
+    #I= A+D+S
+    #have to calculate intensity for r,g,b
+    lighting =[limit_color(int(ambient[0]) + int(diffuse[0]) + int(specular[0])),
+        limit_color(int(ambient[1]) + int(diffuse[1]) + int(specular[1])),
+        limit_color(int(ambient[2]) + int(diffuse[2]) + int(specular[2]))]
+    return lighting
 
 def calculate_ambient(alight, areflect):
-    ambient= [alight[0]*areflect[0],alight[1]*areflect[1],alight[2]*areflect[2]]
+    ambient= [alight[0]*areflect[0], alight[1]*areflect[1], alight[2]*areflect[2]]
     return ambient
+
+
 def calculate_diffuse(light, dreflect, normal):
-    diffuse= [light[0][0]*dreflect[0]*normalize(normal)[0]*normalize(light[1])[0],
-    light[0][1]*dreflect[1]*normalize(normal)[1]*normalize(light[1])[1],
-    light[0][2]*dreflect[2]*normalize(normal)[1]*normalize(light[1])[2],
-    ]
+    vals = [light[COLOR][0], light[COLOR][1], light[COLOR][2]]
+    normalize(normal)
+    constant = dot_product(normal, light[LOCATION])
+
+    diffuse=[limit_color(vals[0]*constant*dreflect[0]),
+    limit_color(vals[1]*constant*dreflect[1]),
+    limit_color(vals[2]*constant*dreflect[2])]
+
     return diffuse
-    #dot_product(DIFFUSE,)*(normalize(normal)*normalize(light))
 
 def calculate_specular(light, sreflect, view, normal):
-    pass
+    vals = [light[COLOR][0], light[COLOR][1], light[COLOR][2]]
+    normalize(normal)
+    constant = dot_product(normal, light[LOCATION])
+
+    lst = normal[:]
+
+    for i in range(0, 3):
+        lst[i] *= 2 * constant
+        lst[i] -= light[LOCATION][i]
+
+    #specular exponent might be wonky
+    specular= [limit_color(vals[0]*(sreflect[0]*dot_product(lst,view))** 3),
+    limit_color(vals[1]*(sreflect[1]*dot_product(lst,view))** 3),
+    limit_color(vals[2]*(sreflect[2]*dot_product(lst,view))** 3),
+    ]
+    return specular
 
 def limit_color(color):
     #should always be between 0 and 255
-    return clamp(color,0,255)
+    return max(min(color,255),0)
 
 #vector functions
 #normalize vetor, should modify the parameter
